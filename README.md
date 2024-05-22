@@ -1,5 +1,4 @@
-A Survey on the Accuracy and Performance of Video Anomaly Detection Models
-## Overview
+# A Survey on the Accuracy and Performance of Video Anomaly Detection Models
 
 This repository contains the official implementations of four advanced video anomaly detection models:
 
@@ -20,6 +19,7 @@ Each model provides unique methodologies for detecting anomalies in video data, 
 6. [Pre-trained Models](#pre-trained-models)
 7. [Results](#results)
 8. [Citation](#citation)
+9. [Contact](#contact)
 
 ## Dependencies
 
@@ -68,67 +68,182 @@ data/
 
 ### Data Preparation
 
-Download and prepare datasets according to each model's requirements. Refer to the respective documentation for detailed instructions.
+#### AIVAD
 
-### Feature Extraction
+**Pre-processing Stage**
 
-For AIVAD:
+To properly perform the pre-processing stage, please change your directory to:
+
 ```sh
-python feature_extraction.py --dataset_name <dataset_name>
+cd path-to-directory/Interpretable_VAD/
 ```
 
-For DMAD:
+1. **Object Detection**
+
+   Our object detector outputs are provided [here](https://drive.google.com/drive/folders/1BnjzuwxyXio2sNU_4w7rlTw4PcURlq_R?usp=sharing).
+   Set up the bounding boxes by placing the corresponding files in the following folders:
+   - All files for Ped2 should be placed in: `./data/ped2`
+   - All files for Avenue should be placed in: `./data/avenue`
+   - All files for ShanghaiTech should be placed in: `./data/shanghaitech`
+
+   Install the Detectron2 library:
+
+   ```sh
+   python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
+   ```
+
+   Download the ResNet50-FPN weights:
+
+   ```sh
+   wget https://dl.fbaipublicfiles.com/detectron2/COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x/137849600/model_final_f10217.pkl -P pre_processing/checkpoints/
+   ```
+
+   Detect all the foreground objects:
+
+   ```sh
+   python pre_processing/bboxes.py --dataset_name=<dataset_name> [--train]
+   ```
+
+   Example for Ped2 training objects:
+
+   ```sh
+   python pre_processing/bboxes.py --dataset_name=ped2 --train
+   ```
+
+2. **Optical Flow**
+
+   Install FlowNet2.0:
+
+   ```sh
+   cd pre_processing
+   bash install_flownet2.sh
+   cd ..
+   ```
+
+   Download pre-trained FlowNet2 weights from [here](https://drive.google.com/file/d/1hF8vS6YeHkx3j2pfCeQqqZGwA_PJq_Da/view?usp=sharing) and place it in `Interpretable_VAD/pre_processing/checkpoints/`.
+
+   Estimate all the optical flows:
+
+   ```sh
+   python pre_processing/flows.py --dataset_name=<dataset_name> [--train]
+   ```
+
+   Example for Ped2 training flows:
+
+   ```sh
+   python pre_processing/flows.py --dataset_name=ped2 --train
+   ```
+
+**Feature Extraction**
+
+Download the required `pose.npy` file from [here](https://drive.google.com/file/d/1fxMmmZ8TmmdGOovbC2QYPgWTaRxyVdE0/view?usp=sharing) and place it in the following path: `./data/shanghaitech/train/pose.npy`.
+
+Extract features:
+
+```sh
+python feature_extraction.py --dataset_name=<dataset_name>
+```
+
+**Score Calibration**
+
+Compute calibration parameters:
+
+```sh
+python score_calibration.py --dataset_name=<dataset_name>
+```
+
+**Evaluation**
+
+Evaluate the model:
+
+```sh
+python evaluate.py --dataset_name=<dataset_name> --sigma=<sigma_value>
+```
+
+### DMAD
+
+**Toy Experiment**
+
+Download VQ-CVAE-based DMAD-PDM from [GoogleDrive](https://drive.google.com/file/d/1llmszdgp7VvKre-SQDw5GJN3TKs4-IJK/view?usp=sharing) or design your custom dataset:
+
 ```sh
 cd DMAD-Toy
 python main.py
 ```
 
-For FastAno:
-```sh
-cd FastAno_official
-python main.py
-```
+**Training & Testing**
 
-For ASTNet:
-```sh
-python prepare_data.py --dataset <dataset_name>
-```
+Download pre-processing files from [BaiduPan](https://pan.baidu.com/s/1n9ko5szFRjdYxHGbBK0TUw) (Password: dmad) or [GoogleDrive](https://drive.google.com/drive/folders/1PlRZmTFEQ7_CsrCLP9YI83rvWuAID5DF?usp=sharing).
 
-## Training and Testing
+Train or test the PDM version DMAD framework:
 
-### AIVAD
-To train and test AIVAD:
-```sh
-python train_aivad.py --dataset_name <dataset_name>
-python evaluate_aivad.py --dataset_name <dataset_name> --sigma <sigma_value>
-```
-
-### DMAD
-To train and test DMAD:
 ```sh
 cd DMAD-PDM
-python Train_ped2.py
-python Evaluate_ped2.py
+python Train_<dataset_name>.py
+python Evaluate_<dataset_name>.py
+```
+
+Train or test the PPDM version DMAD framework:
+
+```sh
+cd DMAD-PPDM
+python Train_mvtec.py
+python Evaluate_mvtec.py
 ```
 
 ### FastAno
-To train and test FastAno:
+
+**Setup**
+
 ```sh
-cd FastAno_official
-python train_fastano.py
-python test_fastano.py
+git clone https://github.com/codnjsqkr/FastAno_official.git
+conda create -n fastano python=3.7.9
+conda activate fastano
+pip install -r requirements.txt
+```
+
+**Dataset Preparation**
+
+1. Create `data` folder inside FastAno_official.
+2. Download UCSD Ped2 dataset from this [website](http://www.svcl.ucsd.edu/projects/anomaly/dataset.htm) and place it in `data` folder.
+
+**Inference with Pre-trained Weights**
+
+Pre-trained weights are located in `FastAno_official/weights/ped2_best.pth`.
+
+Run inference:
+
+```sh
+python main.py
 ```
 
 ### ASTNet
-To train and test ASTNet:
+
+**Setup**
+
 ```sh
-python train_astnet.py --cfg config/ped2.yaml
-python test_astnet.py --cfg config/ped2.yaml --model-file pretrained.ped2.pth
+git clone https://github.com/vt-le/astnet.git
+cd ASTNet/ASTNet
+pip install -r requirements.txt
 ```
 
-## Evaluation
+**Data Preparation**
 
-To evaluate a pre-trained model, use the provided scripts with the appropriate configuration files and model checkpoints.
+Prepare dataset structure as described in the `Datasets` section.
+
+**Evaluation**
+
+Download pre-trained models and run:
+
+```sh
+python test.py --cfg <path/to/config/file> --model-file <path/to/pre-trained/model>
+```
+
+**Training from Scratch**
+
+```sh
+python train.py --cfg <path/to/config/file>
+```
 
 ## Pre-trained Models
 
@@ -138,6 +253,7 @@ Download pre-trained models for evaluation:
 - [DMAD Models](https://drive.google.com/drive/folders/1PlRZmTFEQ7_CsrCLP9YI83rvWuAID5DF?usp=sharing)
 - [FastAno Models](https://github.com/codnjsqkr/FastAno_official/releases)
 - [ASTNet Models](https://github.com/vt-le/astnet/releases)
+
 
 ## Results
 
