@@ -19,7 +19,6 @@ Each model provides unique methodologies for detecting anomalies in video data, 
 6. [Pre-trained Models](#pre-trained-models)
 7. [Results](#results)
 8. [Citation](#citation)
-9. [Contact](#contact)
 
 ## Dependencies
 
@@ -251,8 +250,6 @@ Download pre-trained models for evaluation:
 
 - [AIVAD Models](https://drive.google.com/drive/folders/1vSMpDb5jIyc2tNJaYVphguUlFcwPayms?usp=sharing)
 - [DMAD Models](https://drive.google.com/drive/folders/1PlRZmTFEQ7_CsrCLP9YI83rvWuAID5DF?usp=sharing)
-- [FastAno Models](https://github.com/codnjsqkr/FastAno_official/releases)
-- [ASTNet Models](https://github.com/vt-le/astnet/releases)
 
 
 ## Results
